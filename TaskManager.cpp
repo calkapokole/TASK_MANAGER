@@ -12,8 +12,7 @@ bool operator==(const TaskManager &first, const TaskManager &second)
     return ((first.set_ == second.set_) &&
             (first.usersFileName_ == second.usersFileName_) &&
             (first.tasksFileNameSuffix_ == second.tasksFileNameSuffix_) &&
-            (first.loggedInUsername_ == second.loggedInUsername_) &&
-            (first.bufferSize_ == second.bufferSize_));
+            (first.loggedInUsername_ == second.loggedInUsername_));
 }
 
 bool operator!=(const TaskManager &first, const TaskManager &second)
@@ -21,8 +20,7 @@ bool operator!=(const TaskManager &first, const TaskManager &second)
     return ((first.set_ != second.set_) ||
             (first.usersFileName_ != second.usersFileName_) ||
             (first.tasksFileNameSuffix_ != second.tasksFileNameSuffix_) ||
-            (first.loggedInUsername_ != second.loggedInUsername_) ||
-            (first.bufferSize_ != second.bufferSize_));
+            (first.loggedInUsername_ != second.loggedInUsername_));
 }
 
 void TaskManager::run()
@@ -39,8 +37,7 @@ void TaskManager::run()
                      "[4] EDIT TASK; [5] TASK DETAILS; [6] EXIT\n";
         shellPrompt();
         std::cout << "Choose action: ";
-        std::cin >> action;
-        flushCin(0);
+        action = userInput().toInt();
         switch (action)
         {
         case 1: printTasks(); break;
@@ -65,31 +62,30 @@ TaskManager &TaskManager::getInstance()
 
 TaskManager::TaskManager() :
     usersFileName_("users"),
-    tasksFileNameSuffix_("_tasks"),
-    bufferSize_(1024)
+    tasksFileNameSuffix_("_tasks")
 {
+}
+
+QString TaskManager::userInput() const
+{
+    std::string buffer;
+
+    std::getline(std::cin, buffer, '\n');
+    return QString(buffer.c_str());
 }
 
 QString TaskManager::enterUserName() const
 {
-    char buffer[bufferSize_];
-
     shellPrompt();
     std::cout << "Enter user name: ";
-    std::cin >> buffer;
-    flushCin(bufferSize_);
-    return QString(buffer);
+    return userInput();
 }
 
 QString TaskManager::enterPassword() const
 {
-    char buffer[bufferSize_];
-
     shellPrompt();
     std::cout << "Enter password: ";
-    std::cin >> buffer;
-    flushCin(bufferSize_);
-    return QString(buffer);
+    return userInput();
 }
 
 bool TaskManager::login()
@@ -143,8 +139,7 @@ bool TaskManager::login()
         std::cout << "[1] LOGIN; [2] CREATE NEW USER\n";
         shellPrompt();
         std::cout << "Choose action: ";
-        std::cin >> action;
-        flushCin(0);
+        action = userInput().toInt();
 
         switch (action)
         {
@@ -247,93 +242,63 @@ void TaskManager::printTasks() const
     std::cout << "[0] ID; [1] DATE/TIME; [2] TITLE; [3] PRIORITY; [4] SEVERITY\n";
     shellPrompt();
     std::cout << "Order by: ";
-    std::cin >> order_by;
-    flushCin(0);
+    order_by = userInput().toInt();
     std::cout << "[0] ASCENDING; [1] DESCENDING\n";
     shellPrompt();
     std::cout << "Order type: ";
-    std::cin >> order_type;
-    flushCin(0);
+    order_type = userInput().toInt();
     set_.print((TaskSet::OrderBy)order_by, (TaskSet::OrderType)order_type);
 }
 
 quint32 TaskManager::enterTaskId() const
 {
-    quint32 id;
-
     shellPrompt();
     std::cout << "Enter task ID: ";
-    std::cin >> id;
-    flushCin(0);
-    return id;
+    return (quint32)userInput().toUInt();
 }
 
 QDate TaskManager::enterTaskDate() const
 {
-    char buffer[bufferSize_];
-
     shellPrompt();
     std::cout << "Enter date (yyyy-mm-dd): ";
-    std::cin >> buffer;
-    flushCin(bufferSize_);
-    return QDate::fromString(QString(buffer), "yyyy-MM-dd");
+    return QDate::fromString(userInput(), "yyyy-MM-dd");
 }
 
 QTime TaskManager::enterTaskTime() const
 {
-    char buffer[bufferSize_];
-
     shellPrompt();
     std::cout << "Enter time (hh:mm:ss): ";
-    std::cin >> buffer;
-    flushCin(bufferSize_);
-    return QTime::fromString(QString(buffer), "hh:mm:ss");
+    return QTime::fromString(userInput(), "hh:mm:ss");
 }
 
 QString TaskManager::enterTaskTitle() const
 {
-    char buffer[bufferSize_];
-
     shellPrompt();
     std::cout << "Enter title: ";
-    std::cin >> buffer;
-    flushCin(bufferSize_);
-    return QString(buffer);
+    return userInput();
 }
 
 QString TaskManager::enterTaskDescription() const
 {
-    char buffer[bufferSize_];
-
     shellPrompt();
     std::cout << "Enter description: ";
-    std::cin >> buffer;
-    flushCin(bufferSize_);
-    return QString(buffer);
+    return userInput();
 }
 
 Task::TaskPriority TaskManager::enterTaskPriority() const
 {
-    int priority;
-
     std::cout << "[1] LOW; [2] MEDIUM; [3] HIGH\n";
     shellPrompt();
     std::cout << "Enter priority: ";
-    std::cin >> priority;
-    flushCin(0);
-    return (Task::TaskPriority)priority;
+    return (Task::TaskPriority)userInput().toInt();
 }
 
 Task::TaskSeverity TaskManager::enterTaskSeverity() const
 {
-    int severity;
-
     std::cout << "[1] COSMETIC; [2] WORKAROUND; [3] BLOCKER; [4] SYSTEM FAILURE\n";
     shellPrompt();
     std::cout << "Enter severity: ";
-    std::cin >> severity;
-    flushCin(0);
-    return (Task::TaskSeverity)severity;
+    return (Task::TaskSeverity)userInput().toInt();
 }
 
 bool TaskManager::addTask()
@@ -379,8 +344,7 @@ bool TaskManager::editTask()
                      "[5] PRIORITY; [6] SEVERITY; [7] RETURN TO MAIN MENU\n";
         shellPrompt();
         std::cout << "What would you like to edit? ";
-        std::cin >> action;
-        flushCin(0);
+        action = userInput().toInt();
         switch (action)
         {
         case 1:
@@ -426,7 +390,7 @@ bool TaskManager::editTask()
             break;
         }
         case 7:
-        default:;
+        default: std::cout << "Error! Action unrecognized. Please try again.\n";
         }
     } while (action != 7);
     return true;
@@ -454,12 +418,12 @@ void TaskManager::shellPrompt() const
     std::cout << "$ ";
 }
 
-void TaskManager::flushCin(int lastBufferSize) const
-{
-    if ((0 == lastBufferSize) ||
-        (std::cin.gcount() == lastBufferSize-1))
-    {
-        std::cin.clear();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    }
-}
+//void TaskManager::flushCin(int lastBufferSize) const
+//{
+//    if ((0 == lastBufferSize) ||
+//        (std::cin.gcount() == lastBufferSize-1))
+//    {
+//        std::cin.clear();
+//        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+//    }
+//}

@@ -18,11 +18,11 @@ private:
     QString usersFileName_;
     QString tasksFileNameSuffix_;
     QString loggedInUsername_;
-    int bufferSize_;
 
     TaskManager();
     TaskManager(const TaskManager &other);
     TaskManager &operator=(const TaskManager &other);
+    QString userInput() const;
     QString enterUserName() const;
     QString enterPassword() const;
     bool login();
@@ -41,7 +41,7 @@ private:
     bool editTask();
     bool taskDetails() const;
     void shellPrompt() const;
-    void flushCin(int lastBufferSize) const;
+//    void flushCin(int lastBufferSize) const;
 
 };
 
