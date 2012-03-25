@@ -69,8 +69,8 @@ Task::Task(const QDate &date, const QTime &time,
            Task::TaskPriority priority, Task::TaskSeverity severity) :
     date_(date),
     time_(time),
-    title_(title),
-    description_(description),
+    title_(title.simplified()),
+    description_(description.simplified()),
     priority_(priority),
     severity_(severity)
 {
@@ -159,23 +159,23 @@ bool Task::setTime(QTime time)
 
 bool Task::setTitle(const QString &title)
 {
-    if (title.isEmpty())
+    if (title.simplified().isEmpty())
     {
         return false;
     }
 
-    title_ = title;
+    title_ = title.simplified();
     return true;
 }
 
 bool Task::setDescription(const QString &description)
 {
-    if (description.isEmpty())
+    if (description.simplified().isEmpty())
     {
         return false;
     }
 
-    description_ = description;
+    description_ = description.simplified();
     return true;
 }
 
