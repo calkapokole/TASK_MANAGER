@@ -109,7 +109,7 @@ QString Task::toString() const
     return QString("%1/%2  %3  %4  %5").
             arg(date_.toString("yyyy-MM-dd")).
             arg(time_.toString("hh:mm:ss")).
-            arg(title_.leftJustified(16, ' ', true)).
+            arg(title_.leftJustified(16, QLatin1Char(' '), true)).
             arg(priorityToString(priority_), -8).
             arg(severityToString(severity_), -14);
 }

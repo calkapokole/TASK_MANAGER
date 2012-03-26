@@ -211,7 +211,7 @@ void TaskManager::loadTasks()
 
 void TaskManager::saveTasks() const
 {
-    QFile file(loggedInUsername_ % "_" % tasksFileNameSuffix_);
+    QFile file(loggedInUsername_ % tasksFileNameSuffix_);
 
     if (set_.size() == 0)
     {
@@ -241,11 +241,11 @@ void TaskManager::printTasks() const
 
     std::cout << "[0] ID; [1] DATE/TIME; [2] TITLE; [3] PRIORITY; [4] SEVERITY\n";
     shellPrompt();
-    std::cout << "Order by: ";
+    std::cout << "Order by: [0] ";
     order_by = userInput().toInt();
     std::cout << "[0] ASCENDING; [1] DESCENDING\n";
     shellPrompt();
-    std::cout << "Order type: ";
+    std::cout << "Order type: [0] ";
     order_type = userInput().toInt();
     set_.print((TaskSet::OrderBy)order_by, (TaskSet::OrderType)order_type);
 }
@@ -389,7 +389,7 @@ bool TaskManager::editTask()
                               "Error! Severity was not changed. Wrong input.\n");
             break;
         }
-        case 7:
+        case 7: break;
         default: std::cout << "Error! Action unrecognized. Please try again.\n";
         }
     } while (action != 7);
