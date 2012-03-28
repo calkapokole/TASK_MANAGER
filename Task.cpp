@@ -1,43 +1,29 @@
 #include "Task.h"
 #include <QMap>
-#include <QMetaType>
 
 QDataStream &operator<<(QDataStream &out, const Task &task)
 {
-    out << task.date_ << task.time_ <<
-           task.title_ << task.description_ <<
-           (quint32)task.priority_ << (quint32)task.severity_;
+    out << task.dateTime_
+        << task.title_ << task.description_
+        << (quint32)task.priority_ << (quint32)task.severity_;
     return out;
 }
 
 QDataStream &operator>>(QDataStream &in, Task &task)
 {
-    QDate date;
-    QTime time;
-    QString title;
-    QString description;
     quint32 priority = 0;
     quint32 severity = 0;
 
-    in >> date;
-    in >> time;
-    in >> title;
-    in >> description;
-    in >> priority;
-    in >> severity;
-    task.setDate(date);
-    task.setTime(time);
-    task.setTitle(title);
-    task.setDescription(description);
-    task.setPriority((Task::TaskPriority)priority);
-    task.setSeverity((Task::TaskSeverity)severity);
+    in >> task.dateTime_ >> task.title_ >> task.description_
+       >> priority >> severity;
+    task.priority_ = (Task::TaskPriority)priority;
+    task.severity_ = (Task::TaskSeverity)severity;
     return in;
 }
 
 bool operator==(const Task &first, const Task &second)
 {
-    return ((first.date_ == second.date_) &&
-            (first.time_ == second.time_) &&
+    return ((first.dateTime_ == second.dateTime_) &&
             (first.title_ == second.title_) &&
             (first.description_ == second.description_) &&
             (first.priority_ == second.priority_) &&
@@ -46,8 +32,7 @@ bool operator==(const Task &first, const Task &second)
 
 bool operator!=(const Task &first, const Task &second)
 {
-    return ((first.date_ != second.date_) ||
-            (first.time_ != second.time_) ||
+    return ((first.dateTime_ != second.dateTime_) ||
             (first.title_ != second.title_) ||
             (first.description_ != second.description_) ||
             (first.priority_ != second.priority_) ||
@@ -55,8 +40,7 @@ bool operator!=(const Task &first, const Task &second)
 }
 
 Task::Task() :
-    date_(QDate::currentDate().addDays(1)),
-    time_(QTime::currentTime()),
+    dateTime_(QDateTime::currentDateTime().addDays(1)),
     title_(QString("New task")),
     description_(QString("New task")),
     priority_(LOW_PRIORITY),
@@ -66,25 +50,46 @@ Task::Task() :
 
 Task::Task(const QDate &date, const QTime &time,
            const QString &title, const QString &description,
-           Task::TaskPriority priority, Task::TaskSeverity severity) :
-    date_(date),
-    time_(time),
+           TaskPriority priority, TaskSeverity severity) :
+    dateTime_(QDateTime(date, time)),
     title_(title.simplified()),
     description_(description.simplified()),
     priority_(priority),
     severity_(severity)
 {
-    if (!date_.isValid() || (QDate::currentDate() > date_))
+    if (!dateTime_.isValid() || (QDateTime::currentDateTime() > dateTime_))
     {
-        date_ = QDate::currentDate().addDays(1);
+        dateTime_ = QDateTime::currentDateTime().addDays(1);
     }
-    if (!time_.isValid())
+    if (title_.isEmpty())
     {
-        time_ = QTime::currentTime();
+        title_ = QString("New task");
     }
-    if ((QDate::currentDate() == date_) && (QTime::currentTime() >= time_))
+    if (description_.isEmpty())
     {
-        time_ = QTime::currentTime().addSecs(3600);
+        description_ = QString("New task");
+    }
+    if ((priority_ < LOW_PRIORITY) || (priority_ > HIGH_PRIORITY))
+    {
+        priority_ = LOW_PRIORITY;
+    }
+    if ((severity_ < COSMETIC) || (severity_ > SYSTEM_FAILURE))
+    {
+        severity_ = COSMETIC;
+    }
+}
+
+Task::Task(const QDateTime &dateTime, const QString &title, const QString &description,
+           TaskPriority priority, TaskSeverity severity) :
+    dateTime_(dateTime),
+    title_(title.simplified()),
+    description_(description.simplified()),
+    priority_(priority),
+    severity_(severity)
+{
+    if (!dateTime_.isValid() || (QDateTime::currentDateTime() > dateTime_))
+    {
+        dateTime_ = QDateTime::currentDateTime().addDays(1);
     }
     if (title_.isEmpty())
     {
@@ -106,9 +111,9 @@ Task::Task(const QDate &date, const QTime &time,
 
 QString Task::toString() const
 {
-    return QString("%1/%2  %3  %4  %5").
-            arg(date_.toString("yyyy-MM-dd")).
-            arg(time_.toString("hh:mm:ss")).
+    return QString("%1  %2  %3  %4  %5").
+            arg(dateTime_.date().toString("yyyy-MM-dd")).
+            arg(dateTime_.time().toString("hh:mm:ss")).
             arg(title_.leftJustified(16, QLatin1Char(' '), true)).
             arg(priorityToString(priority_), -8).
             arg(severityToString(severity_), -14);
@@ -116,52 +121,71 @@ QString Task::toString() const
 
 QString Task::details() const
 {
-    return QString("%1%2/%3\n").
-            arg(QString("DATE/TIME:"), -20).
-            arg(date_.toString("yyyy-MM-dd")).
-            arg(time_.toString("hh:mm:ss")) %
-            QString("%1%2\n").
-            arg(QString("TITLE:"), -20).
+    const int desc_field_width = 12;
+
+    return QString("%1  %2\n").
+            arg(QString("DATE:"), desc_field_width).
+            arg(dateTime_.date().toString("yyyy-MM-dd")) %
+            QString("%1  %2\n").
+            arg(QString("TIME:"), desc_field_width).
+            arg(dateTime_.time().toString("hh:mm:ss")) %
+            QString("%1  %2\n").
+            arg(QString("TITLE:"), desc_field_width).
             arg(title_) %
-            QString("%1%2\n").
-            arg(QString("DESCRIPTION:"), -20).
+            QString("%1  %2\n").
+            arg(QString("DESCRIPTION:"), desc_field_width).
             arg(description_) %
-            QString("%1%2\n").
-            arg(QString("PRIORITY:"), -20).
+            QString("%1  %2\n").
+            arg(QString("PRIORITY:"), desc_field_width).
             arg(priorityToString(priority_)) %
-            QString("%1%2").
-            arg(QString("SEVERITY:"), -20).
+            QString("%1  %2").
+            arg(QString("SEVERITY:"), desc_field_width).
             arg(severityToString(severity_));
 }
 
-bool Task::setDate(QDate date)
+bool Task::setDate(const QDate &date)
 {
-    if (date.isValid() && (date >= QDate::currentDate()))
+    if (date.isValid() && (QDateTime(date, dateTime_.time()) > QDateTime::currentDateTime()))
     {
-        date_ = date;
+        dateTime_ = QDateTime(date, dateTime_.time());
         return true;
     }
 
     return false;
 }
 
-bool Task::setTime(QTime time)
+bool Task::setTime(const QTime &time)
 {
-    if (!time.isValid() ||
-        ((QDate::currentDate() == date_) && (QTime::currentTime() >= time)))
+    if (time.isValid() && (QDateTime(dateTime_.date(), time) > QDateTime::currentDateTime()))
     {
-        return false;
+        dateTime_ = QDateTime(dateTime_.date(), time);
+        return true;
     }
 
-    time_ = time;
-    return true;
+    return false;
+}
+
+bool Task::setDateTime(const QDateTime &dateTime)
+{
+    if (dateTime.isValid() && (dateTime > QDateTime::currentDateTime()))
+    {
+        dateTime_ = dateTime;
+        return true;
+    }
+
+    return false;
 }
 
 bool Task::setTitle(const QString &title)
 {
     if (title.simplified().isEmpty())
     {
+#ifndef USE_EXCEPTIONS
         return false;
+#else
+        EmptyStringException e;
+        e.raise();
+#endif // USE_EXCEPTIONS
     }
 
     title_ = title.simplified();
@@ -172,7 +196,12 @@ bool Task::setDescription(const QString &description)
 {
     if (description.simplified().isEmpty())
     {
+#ifndef USE_EXCEPTIONS
         return false;
+#else
+        EmptyStringException e;
+        e.raise();
+#endif // USE_EXCEPTIONS
     }
 
     description_ = description.simplified();

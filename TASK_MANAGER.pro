@@ -24,4 +24,5 @@ SOURCES += main.cpp \
 HEADERS += \
     Task.h \
     TaskManager.h \
-    TaskSet.h
+    TaskSet.h \
+    EmptyStringException.h

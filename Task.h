@@ -1,9 +1,15 @@
 #ifndef TASK_H
 #define TASK_H
 
-#include <QDate>
+#define USE_EXCEPTIONS
+
+#include <QDateTime>
 #include <QDataStream>
 #include <QMetaType>
+
+#ifdef USE_EXCEPTIONS
+#include "EmptyStringException.h"
+#endif // USE_EXCEPTIONS
 
 class Task
 {
@@ -27,18 +33,22 @@ public:
     explicit Task();
     explicit Task(const QDate &date, const QTime &time, const QString &title,
                   const QString &description, TaskPriority priority, TaskSeverity severity);
+    explicit Task(const QDateTime &dateTime, const QString &title, const QString &description,
+                  TaskPriority priority, TaskSeverity severity);
     QString toString() const;
     QString details() const;
 
-    inline QDate getDate() const { return date_; }
-    inline QTime getTime() const { return time_; }
+    inline QDate getDate() const { return dateTime_.date(); }
+    inline QTime getTime() const { return dateTime_.time(); }
+    inline QDateTime getDateTime() const { return dateTime_; }
     inline QString getTitle() const { return title_; }
     inline QString getDescription() const { return description_; }
     inline TaskPriority getPriority() const { return priority_; }
     inline TaskSeverity getSeverity() const { return severity_; }
 
-    bool setDate(QDate date);
-    bool setTime(QTime time);
+    bool setDate(const QDate &date);
+    bool setTime(const QTime &time);
+    bool setDateTime(const QDateTime &dateTime);
     bool setTitle(const QString &title);
     bool setDescription(const QString &description);
     bool setPriority(TaskPriority priority);
@@ -48,12 +58,12 @@ public:
     static QString severityToString(TaskSeverity severity);
 
     friend QDataStream &operator<<(QDataStream &out, const Task &task);
+    friend QDataStream &operator>>(QDataStream &in, Task &task);
     friend bool operator==(const Task &first, const Task &second);
     friend bool operator!=(const Task &first, const Task &second);
 
 private:
-    QDate date_;
-    QTime time_;
+    QDateTime dateTime_;
     QString title_;
     QString description_;
     TaskPriority priority_;
@@ -62,6 +72,5 @@ private:
 };
 
 Q_DECLARE_METATYPE(Task)
-QDataStream &operator>>(QDataStream &in, Task &task);
 
 #endif // TASK_H

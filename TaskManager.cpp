@@ -50,7 +50,7 @@ void TaskManager::run()
         }
     } while (action != 6);
     saveTasks();
-    std::cout << "Thank you for using task manager.\n";
+    std::cout << "Thank you for using Task Manager.\n";
 }
 
 TaskManager &TaskManager::getInstance()
@@ -188,7 +188,7 @@ bool TaskManager::login()
 
 void TaskManager::loadTasks()
 {
-    QFile file(loggedInUsername_ % "_" % tasksFileNameSuffix_);
+    QFile file(loggedInUsername_ % tasksFileNameSuffix_);
 
     if (!file.exists())
     {

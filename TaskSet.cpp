@@ -196,9 +196,10 @@ void TaskSet::print(OrderBy orderBy, OrderType orderType) const
         return;
     }
 
-    QString header = QString("%1  %2  %3  %4  %5\n").
+    QString header = QString("%1  %2  %3  %4  %5  %6\n").
             arg(QString("ID"), -4).
-            arg(QString("DATE/TIME"), -19).
+            arg(QString("DATE"), -10).
+            arg(QString("TIME"), -8).
             arg(QString("TITLE"), -16).
             arg(QString("PRIORITY"), -8).
             arg(QString("SEVERITY"), -14);
@@ -216,7 +217,7 @@ void TaskSet::print(OrderBy orderBy, OrderType orderType) const
 
         while (map_.constEnd() != it)
         {
-            ordered_map.insert(QDateTime(it.value()->getDate(), it.value()->getTime()), it.key());
+            ordered_map.insert(it.value()->getDateTime(), it.key());
             ++it;
         }
         keys = ordered_map.values();
