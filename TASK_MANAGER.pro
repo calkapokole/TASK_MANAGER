@@ -25,4 +25,6 @@ HEADERS += \
     Task.h \
     TaskManager.h \
     TaskSet.h \
-    EmptyStringException.h
+    EmptyStringException.h \
+    InvalidEnumException.h \
+    InvalidDataTypeException.h

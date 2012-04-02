@@ -345,6 +345,91 @@ bool TaskManager::editTask()
         shellPrompt();
         std::cout << "What would you like to edit? ";
         action = userInput().toInt();
+#ifdef USE_EXCEPTIONS
+        switch (action)
+        {
+        case 1:
+        {
+            try
+            {
+                task->setDate(enterTaskDate());
+                std::cout << "Date successfully changed.\n";
+            }
+            catch (InvalidDataTypeException e)
+            {
+                std::cout << "Error! Date was not changed. Wrong input.\n";
+            }
+            break;
+        }
+        case 2:
+        {
+            try
+            {
+                task->setTime(enterTaskTime());
+                std::cout << "Time successfully changed.\n";
+            }
+            catch (InvalidDataTypeException e)
+            {
+                std::cout << "Error! Time was not changed. Wrong input.\n";
+            }
+            break;
+        }
+        case 3:
+        {
+            try
+            {
+                task->setTitle(enterTaskTitle());
+                std::cout << "Title successfully changed.\n";
+            }
+            catch (EmptyStringException e)
+            {
+                std::cout << "Error! Title was not changed. Wrong input.\n";
+            }
+            break;
+        }
+        case 4:
+        {
+            try
+            {
+                task->setDescription(enterTaskDescription());
+                std::cout << "Description successfully changed.\n";
+            }
+            catch (EmptyStringException e)
+            {
+                std::cout << "Error! Description was not changed. Wrong input.\n";
+            }
+            break;
+        }
+        case 5:
+        {
+            try
+            {
+                task->setPriority(enterTaskPriority());
+                std::cout << "Priority successfully changed.\n";
+            }
+            catch (InvalidEnumException e)
+            {
+                std::cout << "Error! Priority was not changed. Wrong input.\n";
+            }
+            break;
+        }
+        case 6:
+        {
+            try
+            {
+                task->setSeverity(enterTaskSeverity());
+                std::cout << "Severity successfully changed.\n";
+            }
+            catch (InvalidEnumException e)
+            {
+                std::cout << "Error! Severity was not changed. Wrong input.\n";
+            }
+            break;
+        }
+        case 7: break;
+        default: std::cout << "Error! Action unrecognized. Please try again.\n";
+        }
+#else
         switch (action)
         {
         case 1:
@@ -392,6 +477,7 @@ bool TaskManager::editTask()
         case 7: break;
         default: std::cout << "Error! Action unrecognized. Please try again.\n";
         }
+#endif // USE_EXCEPTIONS
     } while (action != 7);
     return true;
 }

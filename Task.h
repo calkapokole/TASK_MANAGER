@@ -9,6 +9,8 @@
 
 #ifdef USE_EXCEPTIONS
 #include "EmptyStringException.h"
+#include "InvalidEnumException.h"
+#include "InvalidDataTypeException.h"
 #endif // USE_EXCEPTIONS
 
 class Task
@@ -46,6 +48,15 @@ public:
     inline TaskPriority getPriority() const { return priority_; }
     inline TaskSeverity getSeverity() const { return severity_; }
 
+#ifdef USE_EXCEPTIONS
+    void setDate(const QDate &date) throw (InvalidDataTypeException);
+    void setTime(const QTime &time) throw (InvalidDataTypeException);
+    void setDateTime(const QDateTime &dateTime) throw (InvalidDataTypeException);
+    void setTitle(const QString &title) throw (EmptyStringException);
+    void setDescription(const QString &description) throw (EmptyStringException);
+    void setPriority(TaskPriority priority) throw (InvalidEnumException);
+    void setSeverity(TaskSeverity severity) throw (InvalidEnumException);
+#else
     bool setDate(const QDate &date);
     bool setTime(const QTime &time);
     bool setDateTime(const QDateTime &dateTime);
@@ -53,6 +64,7 @@ public:
     bool setDescription(const QString &description);
     bool setPriority(TaskPriority priority);
     bool setSeverity(TaskSeverity severity);
+#endif // USE_EXCEPTIONS
 
     static QString priorityToString(TaskPriority priority);
     static QString severityToString(TaskSeverity severity);

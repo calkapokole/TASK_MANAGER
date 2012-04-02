@@ -11,10 +11,13 @@ public:
 private Q_SLOTS:
     void testTaskValidation_data();
     void testTaskValidation();
+#ifndef USE_EXCEPTIONS
     void testTaskDate();
     void testTaskTime();
+#endif
     void testTaskTitle();
     void testTaskDescription();
+#ifndef USE_EXCEPTIONS
     void testTaskPriority();
     void testTaskSeverity();
     void testTaskEqual_data();
@@ -27,6 +30,7 @@ private Q_SLOTS:
     void testTaskSetEqual();
 
     void testTaskManagerSingleton();
+#endif
 
 };
 
@@ -68,6 +72,56 @@ void TaskManagerTest::testTaskValidation()
     QVERIFY2(task.getSeverity() <= Task::SYSTEM_FAILURE, "Invalid task severity.");
 }
 
+#ifdef USE_EXCEPTIONS
+void TaskManagerTest::testTaskTitle()
+{
+    Task task;
+
+    try
+    {
+        task.setTitle(QString());
+    }
+    catch (EmptyStringException e)
+    {
+        qWarning() << e.what();
+    }
+    QVERIFY2(task.getTitle() != QString(), "Empty title accepted.");
+    try
+    {
+        task.setTitle(QString("Test task"));
+    }
+    catch (EmptyStringException e)
+    {
+        qWarning() << e.what();
+    }
+    QCOMPARE(task.getTitle(), QString("Test task"));
+}
+
+void TaskManagerTest::testTaskDescription()
+{
+    Task task;
+
+    try
+    {
+        task.setDescription(QString());
+    }
+    catch (EmptyStringException e)
+    {
+        qWarning() << e.what();
+    }
+    QVERIFY2(task.getDescription() != QString(), "Empty description accepted.");
+    try
+    {
+        task.setDescription(QString("Description of test task"));
+    }
+    catch (EmptyStringException e)
+    {
+        qWarning() << e.what();
+    }
+    QCOMPARE(task.getDescription(), QString("Description of test task"));
+}
+
+#else
 void TaskManagerTest::testTaskDate()
 {
     Task task;
@@ -96,31 +150,9 @@ void TaskManagerTest::testTaskTitle()
 {
     Task task;
 
-#ifndef USE_EXCEPTIONS
     QCOMPARE(task.setTitle(QString()), false);
-#else
-    try
-    {
-        QCOMPARE(task.setTitle(QString()), false);
-    }
-    catch (EmptyStringException e)
-    {
-        qDebug() << e.what();
-    }
-#endif // USE_EXCEPTIONS
     QVERIFY2(task.getTitle() != QString(), "Empty title accepted.");
-#ifndef USE_EXCEPTIONS
     QCOMPARE(task.setTitle(QString("Test task")), true);
-#else
-    try
-    {
-        QCOMPARE(task.setTitle(QString("Test task")), true);
-    }
-    catch (EmptyStringException e)
-    {
-        qDebug() << e.what();
-    }
-#endif // USE_EXCEPTIONS
     QCOMPARE(task.getTitle(), QString("Test task"));
 }
 
@@ -128,31 +160,9 @@ void TaskManagerTest::testTaskDescription()
 {
     Task task;
 
-#ifndef USE_EXCEPTIONS
     QCOMPARE(task.setDescription(QString()), false);
-#else
-    try
-    {
-        QCOMPARE(task.setDescription(QString()), false);
-    }
-    catch (EmptyStringException e)
-    {
-        qDebug() << e.what();
-    }
-#endif // USE_EXCEPTIONS
     QVERIFY2(task.getDescription() != QString(), "Empty description accepted.");
-#ifndef USE_EXCEPTIONS
     QCOMPARE(task.setDescription(QString("Description of test task")), true);
-#else
-    try
-    {
-        QCOMPARE(task.setDescription(QString("Description of test task")), true);
-    }
-    catch (EmptyStringException e)
-    {
-        qDebug() << e.what();
-    }
-#endif // USE_EXCEPTIONS
     QCOMPARE(task.getDescription(), QString("Description of test task"));
 }
 
@@ -327,6 +337,7 @@ void TaskManagerTest::testTaskManagerSingleton()
 {
     QCOMPARE(TaskManager::getInstance(), TaskManager::getInstance());
 }
+#endif // USE_EXCEPTIONS
 
 QTEST_APPLESS_MAIN(TaskManagerTest)
 

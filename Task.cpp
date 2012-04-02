@@ -143,6 +143,90 @@ QString Task::details() const
             arg(severityToString(severity_));
 }
 
+#ifdef USE_EXCEPTIONS
+void Task::setDate(const QDate &date) throw (InvalidDataTypeException)
+{
+    if (date.isValid() && (QDateTime(date, dateTime_.time()) > QDateTime::currentDateTime()))
+    {
+        dateTime_ = QDateTime(date, dateTime_.time());
+        return;
+    }
+
+    InvalidDataTypeException e;
+    e.raise();
+}
+
+void Task::setTime(const QTime &time) throw (InvalidDataTypeException)
+{
+    if (time.isValid() && (QDateTime(dateTime_.date(), time) > QDateTime::currentDateTime()))
+    {
+        dateTime_ = QDateTime(dateTime_.date(), time);
+        return;
+    }
+
+    InvalidDataTypeException e;
+    e.raise();
+}
+
+void Task::setDateTime(const QDateTime &dateTime) throw (InvalidDataTypeException)
+{
+    if (dateTime.isValid() && (dateTime > QDateTime::currentDateTime()))
+    {
+        dateTime_ = dateTime;
+        return;
+    }
+
+    InvalidDataTypeException e;
+    e.raise();
+}
+
+void Task::setTitle(const QString &title) throw (EmptyStringException)
+{
+    if (title.simplified().isEmpty())
+    {
+        EmptyStringException e;
+        e.raise();
+    }
+
+    title_ = title.simplified();
+}
+
+void Task::setDescription(const QString &description) throw (EmptyStringException)
+{
+    if (description.simplified().isEmpty())
+    {
+        EmptyStringException e;
+        e.raise();
+    }
+
+    description_ = description.simplified();
+}
+
+void Task::setPriority(TaskPriority priority) throw (InvalidEnumException)
+{
+    if ((priority >= LOW_PRIORITY) && (priority <= HIGH_PRIORITY))
+    {
+        priority_ = priority;
+        return;
+    }
+
+    InvalidEnumException e;
+    e.raise();
+}
+
+void Task::setSeverity(TaskSeverity severity) throw (InvalidEnumException)
+{
+    if ((severity >= COSMETIC) && (severity <= SYSTEM_FAILURE))
+    {
+        severity_ = severity;
+        return;
+    }
+
+    InvalidEnumException e;
+    e.raise();
+}
+
+#else
 bool Task::setDate(const QDate &date)
 {
     if (date.isValid() && (QDateTime(date, dateTime_.time()) > QDateTime::currentDateTime()))
@@ -180,12 +264,7 @@ bool Task::setTitle(const QString &title)
 {
     if (title.simplified().isEmpty())
     {
-#ifndef USE_EXCEPTIONS
         return false;
-#else
-        EmptyStringException e;
-        e.raise();
-#endif // USE_EXCEPTIONS
     }
 
     title_ = title.simplified();
@@ -196,12 +275,7 @@ bool Task::setDescription(const QString &description)
 {
     if (description.simplified().isEmpty())
     {
-#ifndef USE_EXCEPTIONS
         return false;
-#else
-        EmptyStringException e;
-        e.raise();
-#endif // USE_EXCEPTIONS
     }
 
     description_ = description.simplified();
@@ -229,6 +303,7 @@ bool Task::setSeverity(TaskSeverity severity)
 
     return false;
 }
+#endif // USE_EXCEPTIONS
 
 QString Task::priorityToString(TaskPriority priority)
 {
