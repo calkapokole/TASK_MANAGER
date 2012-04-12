@@ -1,6 +1,21 @@
 #include <QtTest/QtTest>
 #include "../TaskManager.h"
 
+#ifdef USE_EXCEPTIONS
+#define TEST_EXCEPTION(fun, expected)\
+{\
+    bool is_exception = false;\
+    try {\
+        fun;\
+    }\
+    catch (...)\
+    {\
+        is_exception = true;\
+    }\
+    QCOMPARE(is_exception, expected);\
+}
+#endif // USE_EXCEPTIONS
+
 class TaskManagerTest : public QObject
 {
     Q_OBJECT
@@ -11,13 +26,10 @@ public:
 private Q_SLOTS:
     void testTaskValidation_data();
     void testTaskValidation();
-#ifndef USE_EXCEPTIONS
     void testTaskDate();
     void testTaskTime();
-#endif
     void testTaskTitle();
     void testTaskDescription();
-#ifndef USE_EXCEPTIONS
     void testTaskPriority();
     void testTaskSeverity();
     void testTaskEqual_data();
@@ -30,7 +42,6 @@ private Q_SLOTS:
     void testTaskSetEqual();
 
     void testTaskManagerSingleton();
-#endif
 
 };
 
@@ -72,65 +83,31 @@ void TaskManagerTest::testTaskValidation()
     QVERIFY2(task.getSeverity() <= Task::SYSTEM_FAILURE, "Invalid task severity.");
 }
 
-#ifdef USE_EXCEPTIONS
-void TaskManagerTest::testTaskTitle()
-{
-    Task task;
+//#ifdef USE_EXCEPTIONS
+//#else
+//#endif // USE_EXCEPTIONS
 
-    try
-    {
-        task.setTitle(QString());
-    }
-    catch (EmptyStringException e)
-    {
-        qWarning() << e.what();
-    }
-    QVERIFY2(task.getTitle() != QString(), "Empty title accepted.");
-    try
-    {
-        task.setTitle(QString("Test task"));
-    }
-    catch (EmptyStringException e)
-    {
-        qWarning() << e.what();
-    }
-    QCOMPARE(task.getTitle(), QString("Test task"));
-}
-
-void TaskManagerTest::testTaskDescription()
-{
-    Task task;
-
-    try
-    {
-        task.setDescription(QString());
-    }
-    catch (EmptyStringException e)
-    {
-        qWarning() << e.what();
-    }
-    QVERIFY2(task.getDescription() != QString(), "Empty description accepted.");
-    try
-    {
-        task.setDescription(QString("Description of test task"));
-    }
-    catch (EmptyStringException e)
-    {
-        qWarning() << e.what();
-    }
-    QCOMPARE(task.getDescription(), QString("Description of test task"));
-}
-
-#else
 void TaskManagerTest::testTaskDate()
 {
     Task task;
 
+#ifdef USE_EXCEPTIONS
+    TEST_EXCEPTION(task.setDate(QDate()), true)
+#else
     QCOMPARE(task.setDate(QDate()), false);
+#endif // USE_EXCEPTIONS
     QVERIFY2(task.getDate() != QDate(), "Invalid date accepted.");
+#ifdef USE_EXCEPTIONS
+    TEST_EXCEPTION(task.setDate(QDate(2016, 2, 29)), false)
+#else
     QCOMPARE(task.setDate(QDate(2016, 2, 29)), true);
+#endif // USE_EXCEPTIONS
     QCOMPARE(task.getDate(), QDate(2016, 2, 29));
+#ifdef USE_EXCEPTIONS
+    TEST_EXCEPTION(task.setDate(QDate(1000, 1, 1)), true)
+#else
     QCOMPARE(task.setDate(QDate(1000, 1, 1)), false);
+#endif // USE_EXCEPTIONS
     QVERIFY2(task.getDate() != QDate(1000, 1, 1), "Older than current date accepted.");
 }
 
@@ -139,10 +116,18 @@ void TaskManagerTest::testTaskTime()
     Task task;
     QTime time;
 
+#ifdef USE_EXCEPTIONS
+    TEST_EXCEPTION(task.setTime(QTime()), true)
+#else
     QCOMPARE(task.setTime(QTime()), false);
+#endif // USE_EXCEPTIONS
     QVERIFY2(task.getTime() != QTime(), "Invalid time accepted.");
     time = QTime::currentTime().addSecs(3600);
+#ifdef USE_EXCEPTIONS
+    TEST_EXCEPTION(task.setTime(time), false)
+#else
     QCOMPARE(task.setTime(time), true);
+#endif // USE_EXCEPTIONS
     QCOMPARE(task.getTime(), time);
 }
 
@@ -150,9 +135,17 @@ void TaskManagerTest::testTaskTitle()
 {
     Task task;
 
+#ifdef USE_EXCEPTIONS
+    TEST_EXCEPTION(task.setTitle(QString()), true)
+#else
     QCOMPARE(task.setTitle(QString()), false);
+#endif // USE_EXCEPTIONS
     QVERIFY2(task.getTitle() != QString(), "Empty title accepted.");
+#ifdef USE_EXCEPTIONS
+    TEST_EXCEPTION(task.setTitle(QString("Test task")), false)
+#else
     QCOMPARE(task.setTitle(QString("Test task")), true);
+#endif // USE_EXCEPTIONS
     QCOMPARE(task.getTitle(), QString("Test task"));
 }
 
@@ -160,9 +153,17 @@ void TaskManagerTest::testTaskDescription()
 {
     Task task;
 
+#ifdef USE_EXCEPTIONS
+    TEST_EXCEPTION(task.setDescription(QString()), true)
+#else
     QCOMPARE(task.setDescription(QString()), false);
+#endif // USE_EXCEPTIONS
     QVERIFY2(task.getDescription() != QString(), "Empty description accepted.");
+#ifdef USE_EXCEPTIONS
+    TEST_EXCEPTION(task.setDescription(QString("Description of test task")), false)
+#else
     QCOMPARE(task.setDescription(QString("Description of test task")), true);
+#endif // USE_EXCEPTIONS
     QCOMPARE(task.getDescription(), QString("Description of test task"));
 }
 
@@ -170,28 +171,68 @@ void TaskManagerTest::testTaskPriority()
 {
     Task task;
 
+#ifdef USE_EXCEPTIONS
+    TEST_EXCEPTION(task.setPriority(Task::UNKNOWN_PRIORITY), true)
+#else
     QCOMPARE(task.setPriority(Task::UNKNOWN_PRIORITY), false);
+#endif // USE_EXCEPTIONS
     QVERIFY2(task.getPriority() != Task::UNKNOWN_PRIORITY, "UNKNOWN_PRIORITY accepted.");
+#ifdef USE_EXCEPTIONS
+    TEST_EXCEPTION(task.setPriority(Task::LOW_PRIORITY), false)
+#else
     QCOMPARE(task.setPriority(Task::LOW_PRIORITY), true);
+#endif // USE_EXCEPTIONS
     QCOMPARE(task.getPriority(), Task::LOW_PRIORITY);
+#ifdef USE_EXCEPTIONS
+    TEST_EXCEPTION(task.setPriority(Task::HIGH_PRIORITY), false)
+#else
     QCOMPARE(task.setPriority(Task::HIGH_PRIORITY), true);
+#endif // USE_EXCEPTIONS
     QCOMPARE(task.getPriority(), Task::HIGH_PRIORITY);
+#ifdef USE_EXCEPTIONS
+    TEST_EXCEPTION(task.setPriority((Task::TaskPriority)((int)(Task::UNKNOWN_PRIORITY)-1)), true)
+#else
     QCOMPARE(task.setPriority((Task::TaskPriority)((int)(Task::UNKNOWN_PRIORITY)-1)), false);
+#endif // USE_EXCEPTIONS
+#ifdef USE_EXCEPTIONS
+    TEST_EXCEPTION(task.setPriority((Task::TaskPriority)((int)(Task::HIGH_PRIORITY)+1)), true)
+#else
     QCOMPARE(task.setPriority((Task::TaskPriority)((int)(Task::HIGH_PRIORITY)+1)), false);
+#endif // USE_EXCEPTIONS
 }
 
 void TaskManagerTest::testTaskSeverity()
 {
     Task task;
 
+#ifdef USE_EXCEPTIONS
+    TEST_EXCEPTION(task.setSeverity(Task::UNKNOWN_SEVERITY), true)
+#else
     QCOMPARE(task.setSeverity(Task::UNKNOWN_SEVERITY), false);
+#endif // USE_EXCEPTIONS
     QVERIFY2(task.getSeverity() != Task::UNKNOWN_SEVERITY, "UNKNOWN_SEVERITY accepted.");
+#ifdef USE_EXCEPTIONS
+    TEST_EXCEPTION(task.setSeverity(Task::COSMETIC), false)
+#else
     QCOMPARE(task.setSeverity(Task::COSMETIC), true);
+#endif // USE_EXCEPTIONS
     QCOMPARE(task.getSeverity(), Task::COSMETIC);
+#ifdef USE_EXCEPTIONS
+    TEST_EXCEPTION(task.setSeverity(Task::SYSTEM_FAILURE), false)
+#else
     QCOMPARE(task.setSeverity(Task::SYSTEM_FAILURE), true);
+#endif // USE_EXCEPTIONS
     QCOMPARE(task.getSeverity(), Task::SYSTEM_FAILURE);
+#ifdef USE_EXCEPTIONS
+    TEST_EXCEPTION(task.setSeverity((Task::TaskSeverity)((int)(Task::UNKNOWN_SEVERITY)-1)), true)
+#else
     QCOMPARE(task.setSeverity((Task::TaskSeverity)((int)(Task::UNKNOWN_SEVERITY)-1)), false);
+#endif // USE_EXCEPTIONS
+#ifdef USE_EXCEPTIONS
+    TEST_EXCEPTION(task.setSeverity((Task::TaskSeverity)((int)(Task::SYSTEM_FAILURE)+1)), true)
+#else
     QCOMPARE(task.setSeverity((Task::TaskSeverity)((int)(Task::SYSTEM_FAILURE)+1)), false);
+#endif // USE_EXCEPTIONS
 }
 
 void TaskManagerTest::testTaskEqual_data()
@@ -337,7 +378,6 @@ void TaskManagerTest::testTaskManagerSingleton()
 {
     QCOMPARE(TaskManager::getInstance(), TaskManager::getInstance());
 }
-#endif // USE_EXCEPTIONS
 
 QTEST_APPLESS_MAIN(TaskManagerTest)
 
