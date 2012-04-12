@@ -1,12 +1,14 @@
 1) Install Qt SDK. Go to http://qt.nokia.com/ and download the latest version
    (project created with Qt SDK 1.2).
-2) To compile the project in directory 'TASK_MANAGER' run:
+2) To compile the project in a directory 'TASK_MANAGER' run:
    qmake
    make
 3) Run TASK_MANAGER
-4) To compile unit tests in directory 'unit_tests' run:
+4) To compile unit tests in a directory 'unit_tests' run:
    qmake
    make
 5) Run tst_TaskManagerTest
 
-All the files encoded using UTF-8.
+All the files encoded using UTF-8. Project is configured to use exceptions.
+In order to disable exceptions, in a file Task.h comment line containing:
+#define USE_EXCEPTIONS
